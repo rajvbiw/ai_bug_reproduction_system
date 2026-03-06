@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bug Reproduction System | Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark-mode">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon"></div>
+                <h1>AI-BRS</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-view="submit">
+                    <i data-lucide="plus-circle"></i>
+                    <span>Submit Bug</span>
+                </a>
+                <a href="#" class="nav-item" data-view="reports">
+                    <i data-lucide="file-text"></i>
+                    <span>All Reports</span>
+                </a>
+                <a href="#" class="nav-item" data-view="settings">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator online"></div>
+                <span>System Online</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search bug reports...">
+                </div>
+                <div class="user-profile">
+                    <div class="notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="badge"></span>
+                    </div>
+                    <div class="avatar"></div>
+                </div>
+            </header>
+
+            <section class="content-view active" id="dashboard-view">
+                <div class="view-header">
+                    <h2>Dashboard Overview</h2>
+                    <p>Track your automated bug reproduction tasks in real-time.</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i data-lucide="bug"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Bugs</h3>
+                            <span class="stat-value" id="total-bugs">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i data-lucide="refresh-cw"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>In Progress</h3>
+                            <span class="stat-value" id="in-progress">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i data-lucide="check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Reproduced</h3>
+                            <span class="stat-value" id="reproduced">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Failed</h3>
+                            <span class="stat-value" id="failed">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bug Reports -->
+                <div class="table-section glass">
+                    <div class="section-header">
+                        <h3>Recent Bug Reports</h3>
+                        <button class="btn btn-primary" id="refresh-btn">
+                            <i data-lucide="rotate-cw"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="bugs-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Reproduction Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-view" id="submit-view">
+                <div class="view-header">
+                    <h2>Submit New Bug Report</h2>
+                    <p>Enter the details of the bug for automated reproduction.</p>
+                </div>
+                <div class="form-container glass">
+                    <form id="bug-form">
+                        <div class="form-group">
+                            <label for="title">Bug Title</label>
+                            <input type="text" id="title" placeholder="e.g., Login fails on empty password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Detailed Description</label>
+                            <textarea id="description" rows="4" placeholder="Describe the steps to reproduce, expected vs actual behavior..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="repository_url">Repository URL</label>
+                                <input type="url" id="repository_url" placeholder="https://github.com/org/repo">
+                            </div>
+                            <div class="form-group">
+                                <label for="target_branch">Target Branch</label>
+                                <input type="text" id="target_branch" placeholder="main" value="main">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i data-lucide="send"></i> Start Reproduction
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Overlay -->
+    <div id="toast-container"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

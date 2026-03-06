@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+flask
+pandas
+numpy
+scikit-learn
+requests
+flask-cors
+celery
+redis
+psycopg2-binary
+pydantic-settings
+sqlalchemy
+spacy
+docker
+pytest-json-report
