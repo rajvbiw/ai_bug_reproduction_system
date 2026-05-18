@@ -1,0 +1,58 @@
+services:
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bug_repro_db
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8085 --reload
+    restart: always
+    volumes:
+      - ./app:/app
+    ports:
+      - "8085:8085"
+    environment:
+      - MYSQL_SERVER=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DB=bug_repro_db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: celery -A backend.services.tasks worker --loglevel=info
+    restart: always
+    volumes:
+      - ./app:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - MYSQL_SERVER=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DB=bug_repro_db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app/frontend/dashboard:/usr/share/nginx/html
+    depends_on:
+      - api
