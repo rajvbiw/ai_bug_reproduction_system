@@ -4,7 +4,7 @@ from backend.core.config import settings
 from backend.api import router as api_router
 from backend.db.session import engine
 from backend.db.base_class import Base
-from database.models import bug_report, test_case, execution_log # Force model registration
+from database.models import bug_report, test_case, execution_log, chat_message, bug_analysis, github_issue # Force model registration
 
 import time
 from sqlalchemy.exc import OperationalError

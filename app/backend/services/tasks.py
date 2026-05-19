@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import json
 from backend.services.celery_app import celery_app
 from backend.nlp_engine.analysis import nlp_engine
 from backend.code_analyzer.parser import CodeAnalyzer
@@ -12,6 +13,9 @@ from backend.db.session import SessionLocal
 from database.models.bug_report import BugReport, BugStatus
 from database.models.test_case import TestCase, TestExecutionStatus
 from database.models.execution_log import ExecutionLog
+from database.models.bug_analysis import BugAnalysis
+from backend.services.ai_service import ai_service
+from backend.services.slack_service import slack_service
 
 @celery_app.task
 def process_bug_report(bug_id: int):
@@ -24,7 +28,14 @@ def process_bug_report(bug_id: int):
         bug.status = BugStatus.ANALYZING
         db.commit()
         
-        # 1. NLP Analysis
+        # 1. AI & NLP Analysis
+        # Generate reproduction plan via AI service
+        repro_plan = ai_service.generate_reproduction_plan(bug.title, bug.description)
+        repro_steps_str = "\n".join(repro_plan.get("reproduction_steps", []))
+        if repro_steps_str:
+            bug.steps_to_reproduce = repro_steps_str
+            db.commit()
+
         analysis = nlp_engine.analyze_bug(bug.description)
         
         # 2. Codebase Analysis
@@ -85,6 +96,37 @@ def process_bug_report(bug_id: int):
         
         bug.status = BugStatus.REPRODUCED if detection["reproduced"] else BugStatus.NOT_REPRODUCED
         db.commit()
+
+        # 6. AI Log Analysis & Fix Suggestion
+        log_content = exec_result.get("logs") or bug.description
+        ai_analysis = ai_service.analyze_logs(log_content)
+        
+        bug_analysis = BugAnalysis(
+            bug_report_id=bug.id,
+            reproduction_plan=json.dumps(repro_plan),
+            root_cause=ai_analysis.get("root_cause"),
+            suggested_fix=json.dumps(ai_analysis.get("suggested_fix")),
+            severity=ai_analysis.get("severity"),
+            debugging_summary=ai_analysis.get("summary")
+        )
+        db.add(bug_analysis)
+        db.commit()
+
+        # 7. Slack Alert
+        status_str = "success" if detection["reproduced"] else "failed"
+        slack_msg = (
+            f"*Status*: {bug.status.value.upper()}\n"
+            f"*Severity*: {ai_analysis.get('severity')}\n"
+            f"*Summary*: {ai_analysis.get('summary')}\n"
+            f"*Root Cause*: {ai_analysis.get('root_cause')}\n"
+            f"*Suggested Fix*: {', '.join(ai_analysis.get('suggested_fix', [])) if isinstance(ai_analysis.get('suggested_fix'), list) else ai_analysis.get('suggested_fix')}"
+        )
+        slack_service.send_webhook_alert(
+            title=f"Bug '{bug.title}' Reproduction Result",
+            text=slack_msg,
+            status=status_str
+        )
         
     finally:
         db.close()
+

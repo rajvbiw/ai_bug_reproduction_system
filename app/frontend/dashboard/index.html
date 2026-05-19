@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Bug Reproduction System | Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="dark-mode">
     <div class="app-container">
@@ -24,6 +25,18 @@
                 <a href="#" class="nav-item" data-view="submit">
                     <i data-lucide="plus-circle"></i>
                     <span>Submit Bug</span>
+                </a>
+                <a href="#" class="nav-item" data-view="chat">
+                    <i data-lucide="message-square"></i>
+                    <span>AI Assistant</span>
+                </a>
+                <a href="#" class="nav-item" data-view="analyze">
+                    <i data-lucide="terminal"></i>
+                    <span>Log Analyzer</span>
+                </a>
+                <a href="#" class="nav-item" data-view="github">
+                    <i data-lucide="github"></i>
+                    <span>GitHub Sync</span>
                 </a>
                 <a href="#" class="nav-item" data-view="reports">
                     <i data-lucide="file-text"></i>
@@ -56,6 +69,7 @@
                 </div>
             </header>
 
+            <!-- Dashboard View -->
             <section class="content-view active" id="dashboard-view">
                 <div class="view-header">
                     <h2>Dashboard Overview</h2>
@@ -129,6 +143,7 @@
                 </div>
             </section>
 
+            <!-- Submit View -->
             <section class="content-view" id="submit-view">
                 <div class="view-header">
                     <h2>Submit New Bug Report</h2>
@@ -160,7 +175,245 @@
                     </form>
                 </div>
             </section>
+
+            <!-- Chat / AI Assistant View -->
+            <section class="content-view" id="chat-view">
+                <div class="view-header">
+                    <h2>AI Debugging Assistant</h2>
+                    <p>Interact with the AI chatbot to debug files, tracebacks, or ask questions.</p>
+                </div>
+                <div class="chat-wrapper glass">
+                    <div class="chat-sidebar">
+                        <div class="chat-config-group">
+                            <label for="chat-model-select">AI Model</label>
+                            <select id="chat-model-select" class="chat-select">
+                                <option value="llama3" selected>Llama 3 (Default)</option>
+                                <option value="mistral">Mistral</option>
+                            </select>
+                        </div>
+                        <div class="chat-config-group">
+                            <label>Assistant Mode</label>
+                            <div class="mode-toggles">
+                                <button class="mode-btn active" id="mode-assistant">
+                                    <i data-lucide="shield-alert"></i> Debugger
+                                </button>
+                                <button class="mode-btn" id="mode-analysis">
+                                    <i data-lucide="bar-chart-2"></i> Error Analyzer
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" id="clear-chat-btn" style="margin-top: auto; justify-content: center; width: 100%;">
+                            <i data-lucide="trash-2"></i> Clear History
+                        </button>
+                    </div>
+                    <div class="chat-main">
+                        <div class="chat-history" id="chat-history-container">
+                            <!-- Messages loaded here -->
+                            <div class="chat-message assistant">
+                                <div class="message-content">
+                                    Hello! I am your AI Debugging Assistant. How can I help you reproduce and debug your bugs today?
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-bar">
+                            <button class="btn-voice" id="chat-mic-btn" title="Speak message">
+                                <i data-lucide="mic"></i>
+                            </button>
+                            <input type="text" id="chat-input" placeholder="Ask anything, paste stack trace, or describe issue..." autocomplete="off">
+                            <button class="btn btn-primary" id="chat-send-btn">
+                                <i data-lucide="send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Log Analyzer View -->
+            <section class="content-view" id="analyze-view">
+                <div class="view-header">
+                    <h2>AI Log & Screenshot Analyzer</h2>
+                    <p>Upload log files, paste tracebacks, or upload terminal screenshots to diagnose root causes and suggest patches.</p>
+                </div>
+                <div class="analyze-grid">
+                    <div class="analyze-inputs glass">
+                        <div class="analyze-tabs">
+                            <button class="tab-btn active" data-tab="tab-text">Paste Text</button>
+                            <button class="tab-btn" data-tab="tab-file">Upload Log</button>
+                            <button class="tab-btn" data-tab="tab-ocr">Upload Screenshot</button>
+                        </div>
+
+                        <!-- Tab Content: Paste Text -->
+                        <div class="tab-content active" id="tab-text">
+                            <textarea id="log-text-input" rows="12" placeholder="Paste python traceback or server logs here..."></textarea>
+                            <button class="btn btn-primary btn-large" id="analyze-text-btn">
+                                <i data-lucide="search-code"></i> Run Log Analysis
+                            </button>
+                        </div>
+
+                        <!-- Tab Content: Upload File -->
+                        <div class="tab-content" id="tab-file">
+                            <div class="drop-zone" id="log-file-drop">
+                                <i data-lucide="file-up" style="width: 48px; height: 48px;"></i>
+                                <p>Drag and drop log file here, or click to upload</p>
+                                <input type="file" id="log-file-input" style="display: none;" accept=".txt,.log,.json">
+                            </div>
+                            <button class="btn btn-primary btn-large" id="analyze-file-btn" disabled>
+                                <i data-lucide="play-circle"></i> Analyze File
+                            </button>
+                        </div>
+
+                        <!-- Tab Content: OCR -->
+                        <div class="tab-content" id="tab-ocr">
+                            <div class="drop-zone" id="ocr-drop">
+                                <i data-lucide="image" style="width: 48px; height: 48px;"></i>
+                                <p>Drag and drop terminal/stacktrace screenshot here</p>
+                                <input type="file" id="ocr-file-input" style="display: none;" accept="image/*">
+                            </div>
+                            <button class="btn btn-primary btn-large" id="analyze-ocr-btn" disabled>
+                                <i data-lucide="scan-eye"></i> Run OCR & Analysis
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analyze-results glass">
+                        <div class="results-header">
+                            <h3>AI Diagnosis Result</h3>
+                            <span class="severity-badge" id="results-severity">--</span>
+                        </div>
+                        <div class="results-body">
+                            <div class="result-section">
+                                <h4>Summary</h4>
+                                <p id="result-summary">No active analysis. Use input panel to generate diagnosis.</p>
+                            </div>
+                            <div class="result-section">
+                                <h4>Root Cause Detection</h4>
+                                <p id="result-cause">--</p>
+                            </div>
+                            <div class="result-section">
+                                <h4>Suggested Fixes</h4>
+                                <ul id="result-fixes">
+                                    <li>--</li>
+                                </ul>
+                            </div>
+                            <div class="result-section">
+                                <h4>Patch Example / Suggested Code</h4>
+                                <pre><code class="language-python" id="result-patch"># Fix will display here</code></pre>
+                            </div>
+                            <div class="result-section" id="extracted-text-section" style="display: none;">
+                                <h4>Extracted Text (OCR)</h4>
+                                <pre><code id="result-ocr-text"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GitHub Sync View -->
+            <section class="content-view" id="github-view">
+                <div class="view-header">
+                    <h2>GitHub Issue Sync</h2>
+                    <p>Import and automatically analyze issues directly from public or private GitHub repositories.</p>
+                </div>
+                <div class="form-container glass">
+                    <form id="github-form">
+                        <div class="form-group">
+                            <label for="github-repo">Repository URL or Name</label>
+                            <input type="text" id="github-repo" placeholder="e.g., https://github.com/facebook/react or facebook/react" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="github-issue-number">Issue Number</label>
+                            <input type="number" id="github-issue-number" placeholder="e.g., 42" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-large" id="github-submit-btn">
+                            <i data-lucide="download-cloud"></i> Import & Auto-Analyze
+                        </button>
+                    </form>
+
+                    <div class="github-import-results" id="github-results" style="display: none; margin-top: 2rem;">
+                        <div style="border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                            <h3 style="margin-bottom: 1rem; color: var(--secondary);">Import Status</h3>
+                            <div id="github-status-box" class="glass" style="padding: 1.5rem; border-radius: 12px;">
+                                <!-- Status info -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- All Reports View -->
+            <section class="content-view" id="reports-view">
+                <div class="view-header">
+                    <h2>Analysis Reports History</h2>
+                    <p>Review debugging analyses, AI suggestions, and reproduction statuses.</p>
+                </div>
+                <div class="table-section glass">
+                    <div class="table-container">
+                        <table id="reports-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Bug Title</th>
+                                    <th>Severity</th>
+                                    <th>Summary</th>
+                                    <th>Created At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section class="content-view" id="settings-view">
+                <div class="view-header">
+                    <h2>System Settings</h2>
+                    <p>Manage API credentials, Ollama configurations, and Slack Bot details.</p>
+                </div>
+                <div class="form-container glass">
+                    <form id="settings-form">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary);">Ollama Service</h3>
+                        <div class="form-group">
+                            <label for="settings-ollama-url">Ollama Host URL</label>
+                            <input type="url" id="settings-ollama-url" value="http://localhost:11434">
+                        </div>
+                        <div class="form-group">
+                            <label for="settings-ollama-model">Ollama Active Model</label>
+                            <input type="text" id="settings-ollama-model" value="llama3">
+                        </div>
+
+                        <h3 style="margin-bottom: 1rem; color: var(--secondary); margin-top: 2rem;">Integrations</h3>
+                        <div class="form-group">
+                            <label for="settings-github-token">GitHub Personal Access Token (Optional)</label>
+                            <input type="password" id="settings-github-token" placeholder="ghp_************************************">
+                        </div>
+                        <div class="form-group">
+                            <label for="settings-slack-webhook">Slack Incoming Webhook URL</label>
+                            <input type="url" id="settings-slack-webhook" placeholder="https://hooks.slack.com/services/T.../B.../X...">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i data-lucide="save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </section>
         </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="details-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3 id="modal-bug-title">Bug Details</h3>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-bug-body">
+                <!-- details go here -->
+            </div>
+        </div>
     </div>
 
     <!-- Notification Overlay -->
@@ -168,7 +421,6 @@
 
     <script src="app.js"></script>
     <script>
-        // Initialize Lucide icons
         lucide.createIcons();
     </script>
 </body>
