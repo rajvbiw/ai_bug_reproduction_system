@@ -1,0 +1,72 @@
+# ─── Python Bytecode & Caches ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# ─── Distribution / Packaging ──────────────────────────────────────────────
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+MANIFEST
+
+# ─── Virtual Environments ──────────────────────────────────────────────────
+venv/
+env/
+.venv/
+.env/
+
+# ─── Testing & Coverage ────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+nosetests.xml
+pytest-report.xml
+
+# ─── Linting / Type Checking ───────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# ─── Environment / Secrets ─────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+
+# ─── IDE / Editor ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ─── OS ────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Docker ────────────────────────────────────────────────────────────────
+.dockerignore
+
+# ─── Database ──────────────────────────────────────────────────────────────
+*.db
+*.sqlite3
+
+# ─── Logs ──────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Auto-Generated Test Files ─────────────────────────────────────────────
+app/generated_tests/
+
+# ─── Playwright / Demo Temp Files ──────────────────────────────────────────
+demo_test_log.txt
+demo_screenshot.png
