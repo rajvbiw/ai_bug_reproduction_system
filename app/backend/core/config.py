@@ -5,12 +5,15 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AI Bug Reproduction System"
     API_V1_STR: str = "/api/v1"
     
-    # MySQL Database
-    MYSQL_SERVER: str = os.getenv("MYSQL_SERVER", "localhost")
+    MYSQL_SERVER: str = os.getenv("MYSQL_HOST", "mysql")
     MYSQL_USER: str = os.getenv("MYSQL_USER", "root")
-    MYSQL_PASSWORD: str = os.getenv("MYSQL_PASSWORD", "root")
-    MYSQL_DB: str = os.getenv("MYSQL_DB", "bug_repro_db")
-    SQLALCHEMY_DATABASE_URI: str = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_SERVER}/{MYSQL_DB}"
+    MYSQL_PASSWORD: str = os.getenv("MYSQL_PASSWORD", "Test123")
+    MYSQL_DATABASE: str = os.getenv("MYSQL_DATABASE", "aibugdb")
+
+    SQLALCHEMY_DATABASE_URI: str = (
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
+        f"@{MYSQL_SERVER}/{MYSQL_DATABASE}"
+    )
     
     # Redis & Celery
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
